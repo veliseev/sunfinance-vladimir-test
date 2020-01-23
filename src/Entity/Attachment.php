@@ -6,9 +6,11 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\PersistentCollection;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use JMS\Serializer\Annotation as JMS;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class Attachment
@@ -18,6 +20,7 @@ use Swagger\Annotations as SWG;
  */
 class Attachment
 {
+
     use TimestampableEntity;
 
     /**
@@ -45,10 +48,18 @@ class Attachment
     private $document;
 
     /**
-     * @ORM\OneToMany(targetEntity="Thumbnail", mappedBy="attachment")
-     * @var ArrayCollection
+     * @ORM\OneToMany(targetEntity="Thumbnail", mappedBy="attachment", cascade={"all"})
+     * @var PersistentCollection
      */
     private $thumbnails;
+
+    /**
+     * @Assert\File(
+     *     mimeTypes = {"application/pdf", "application/x-pdf"},
+     *     mimeTypesMessage = "Please upload a valid PDF"
+     * )
+     */
+    private $file;
 
     /**
      * Attachment constructor.
@@ -100,24 +111,28 @@ class Attachment
 
     /**
      * @param Document $document
+     *
+     * @return Attachment
      */
-    public function setDocument(Document $document): void
+    public function setDocument(Document $document): Attachment
     {
         $this->document = $document;
+
+        return $this;
     }
 
     /**
-     * @return ArrayCollection
+     * @return PersistentCollection
      */
-    public function getThumbnails(): ArrayCollection
+    public function getThumbnails(): ?PersistentCollection
     {
         return $this->thumbnails;
     }
 
     /**
-     * @param ArrayCollection $thumbnails
+     * @param PersistentCollection $thumbnails
      */
-    public function setThumbnails(ArrayCollection $thumbnails): void
+    public function setThumbnails(PersistentCollection $thumbnails): void
     {
         $this->thumbnails = $thumbnails;
     }
@@ -129,8 +144,7 @@ class Attachment
      */
     public function addThumbnail(Thumbnail $thumbnail): Attachment
     {
-        $thumbnail->setAttachment($this);
-        $this->thumbnails[] = $thumbnail;
+        $this->thumbnails[] = $thumbnail->setAttachment($this);
 
         return $this;
     }
@@ -141,5 +155,21 @@ class Attachment
     public function removeThumbnail(Thumbnail $thumbnail): void
     {
         $this->thumbnails->removeElement($thumbnail);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * @param mixed $file
+     */
+    public function setFile($file): void
+    {
+        $this->file = $file;
     }
 }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use JMS\Serializer\Annotation as JMS;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class Document
@@ -31,6 +31,7 @@ class Document
     private $id;
 
     /**
+     * @Assert\NotBlank()
      * @ORM\Column(type="string")
      *
      * @var string
@@ -38,18 +39,10 @@ class Document
     private $title;
 
     /**
-     * @ORM\OneToOne(targetEntity="Attachment", mappedBy="document")
+     * @ORM\OneToOne(targetEntity="Attachment", mappedBy="document", cascade={"all"})
      * @var Attachment
      */
     private $attachment;
-
-    /**
-     * Document constructor.
-     */
-    public function __construct()
-    {
-        $this->attachments = new ArrayCollection();
-    }
 
     /**
      * @return int
@@ -68,9 +61,9 @@ class Document
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }

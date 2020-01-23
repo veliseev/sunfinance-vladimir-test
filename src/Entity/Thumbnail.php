@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use JMS\Serializer\Annotation as JMS;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class Thumbnail
@@ -17,6 +18,7 @@ use Swagger\Annotations as SWG;
  */
 class Thumbnail
 {
+
     use TimestampableEntity;
 
     /**
@@ -42,6 +44,11 @@ class Thumbnail
      * @var Attachment
      */
     private $attachment;
+
+    /**
+     * @Assert\Image()
+     */
+    private $file;
 
     /**
      * @return int
@@ -85,9 +92,13 @@ class Thumbnail
 
     /**
      * @param Attachment $attachment
+     *
+     * @return Thumbnail
      */
-    public function setAttachment(Attachment $attachment): void
+    public function setAttachment(Attachment $attachment): Thumbnail
     {
         $this->attachment = $attachment;
+
+        return $this;
     }
 }

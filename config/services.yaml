@@ -8,6 +8,8 @@ parameters:
 services:
     # default configuration for services in *this* file
     _defaults:
+        bind:
+            $uploadDir: '%kernel.project_dir%/public/%env(resolve:UPLOAD_DIR)%'
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
@@ -22,6 +24,15 @@ services:
     App\Controller\:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
+
+    App\EventListener\AttachmentEventListener:
+        arguments: ['@logger', '@doctrine.orm.default_entity_manager']
+        tags:
+            - { name: kernel.event_listener, event: attachment.uploaded, method: onAttachmentUploaded }
+
+    App\EventListener\AttachmentRemoveEventListener:
+        tags:
+            - { name: doctrine.event_listener, event: preRemove, connection: default}
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

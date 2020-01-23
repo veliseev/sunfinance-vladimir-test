@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Document;
-use App\Entity\Order;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -33,6 +32,18 @@ class DocumentRepository extends ServiceEntityRepository
     public function save(Document $document): void
     {
         $this->_em->persist($document);
+        $this->_em->flush();
+    }
+
+    /**
+     * @param Document $document
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function remove(Document $document): void
+    {
+        $this->_em->remove($document);
         $this->_em->flush();
     }
 }
