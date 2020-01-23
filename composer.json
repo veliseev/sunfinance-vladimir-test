@@ -5,6 +5,11 @@
         "php": "^7.1.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/doctrine-migrations-bundle": "^2.0",
+        "friendsofsymfony/rest-bundle": "^2.6",
+        "jms/serializer-bundle": "^3.5",
+        "msgphp/user-bundle": "^0.14.0",
+        "nelmio/api-doc-bundle": "^3.5",
         "sensio/framework-extra-bundle": "^5.1",
         "symfony/asset": "4.4.*",
         "symfony/console": "4.4.*",
@@ -16,6 +21,7 @@
         "symfony/http-client": "4.4.*",
         "symfony/intl": "4.4.*",
         "symfony/mailer": "4.4.*",
+        "symfony/messenger": "4.4.*",
         "symfony/monolog-bundle": "^3.1",
         "symfony/orm-pack": "*",
         "symfony/process": "4.4.*",
@@ -28,8 +34,9 @@
         "symfony/yaml": "4.4.*"
     },
     "require-dev": {
+        "sebastian/diff": "^3.0",
         "symfony/debug-pack": "*",
-        "symfony/maker-bundle": "^1.0",
+        "symfony/maker-bundle": "^1.14",
         "symfony/profiler-pack": "*",
         "symfony/test-pack": "*"
     },
