@@ -56,7 +56,7 @@ class Attachment
 
     /**
      * @Assert\File(
-     *     maxSize="2M",
+     *     maxSize="20M",
      *     mimeTypes = {"application/pdf", "application/x-pdf"},
      *     mimeTypesMessage = "Please upload a valid PDF"
      * )

@@ -33,7 +33,6 @@ Documentation will be available here http://localhost, you'll be available to te
 ## Important Notes
 * I didn't have enough time to figure out how to properly configure nginx within docker contanier, that's why
     * application uses port 80, so make sure it's not used in the system, before running containers
-    * 2Mb size limitation for PDF files
 *  .env file was commited to the repo with sensitive data, but it's for test purposes only! That's not a good idea, to store credentials in the repos, so that's not how I normally do.
 ---
 Best Regards,

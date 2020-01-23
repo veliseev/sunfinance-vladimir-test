@@ -226,6 +226,7 @@ class DocumentController extends AbstractFOSRestController
      */
     public function createAttachment(Request $request)
     {
+
         $document = $this->documentRepository->find($request->get('document_id'));
         if (! $document) {
             throw new ResourceNotFoundException('Document not found.');
@@ -237,7 +238,6 @@ class DocumentController extends AbstractFOSRestController
         }
         $file = $request->files->get('file');
         $attachment->setFile($file);
-
         $errors = $this->validator->validate($attachment);
         $view   = null;
 
