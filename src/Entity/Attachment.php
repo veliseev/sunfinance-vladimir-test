@@ -48,6 +48,7 @@ class Attachment
     private $document;
 
     /**
+     * @JMS\Exclude()
      * @ORM\OneToMany(targetEntity="Thumbnail", mappedBy="attachment", cascade={"all"})
      * @var PersistentCollection
      */
@@ -55,6 +56,7 @@ class Attachment
 
     /**
      * @Assert\File(
+     *     maxSize="2M",
      *     mimeTypes = {"application/pdf", "application/x-pdf"},
      *     mimeTypesMessage = "Please upload a valid PDF"
      * )

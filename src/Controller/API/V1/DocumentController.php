@@ -4,15 +4,17 @@ namespace App\Controller\API\V1;
 
 use App\Entity\Attachment;
 use App\Entity\Document;
+use App\Entity\Thumbnail;
 use App\Event\AttachmentUploadedEvent;
-use App\Form\DocumentType;
 use App\Interfaces\UploadAwareInterface;
 use App\Repository\DocumentRepository;
+use App\Repository\ThumbnailRepository;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\LegacyEventDispatcherProxy;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,6 +36,11 @@ class DocumentController extends AbstractFOSRestController
      * @var DocumentRepository
      */
     private $documentRepository;
+
+    /**
+     * @var ThumbnailRepository
+     */
+    private $thumbnailRepository;
 
     /**
      * @var ValidatorInterface
@@ -59,6 +66,7 @@ class DocumentController extends AbstractFOSRestController
      * DocumentController constructor.
      *
      * @param DocumentRepository       $documentRepository
+     * @param ThumbnailRepository      $thumbnailRepository
      * @param ValidatorInterface       $validator
      * @param SerializerInterface      $serializer
      * @param UploadAwareInterface     $uploader
@@ -66,16 +74,18 @@ class DocumentController extends AbstractFOSRestController
      */
     public function __construct(
         DocumentRepository $documentRepository,
+        ThumbnailRepository $thumbnailRepository,
         ValidatorInterface $validator,
         SerializerInterface $serializer,
         UploadAwareInterface $uploader,
         EventDispatcherInterface $dispatcher
     ) {
-        $this->documentRepository = $documentRepository;
-        $this->validator          = $validator;
-        $this->serializer         = $serializer;
-        $this->uploader           = $uploader;
-        $this->dispatcher         = LegacyEventDispatcherProxy::decorate($dispatcher);
+        $this->documentRepository  = $documentRepository;
+        $this->thumbnailRepository = $thumbnailRepository;
+        $this->validator           = $validator;
+        $this->serializer          = $serializer;
+        $this->uploader            = $uploader;
+        $this->dispatcher          = LegacyEventDispatcherProxy::decorate($dispatcher);
     }
 
     /**
@@ -172,8 +182,7 @@ class DocumentController extends AbstractFOSRestController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Returns document by id.",
-     *     @Model(type=Document::class)
+     *     description="Returns attachment."
      * )
      *
      * @return Response
@@ -184,9 +193,14 @@ class DocumentController extends AbstractFOSRestController
         if (! $document) {
             throw new ResourceNotFoundException('Document not found.');
         }
-        $view = $this->view($document->getAttachment(), Response::HTTP_OK);
 
-        return $this->handleView($view);
+        if(! $attachment = $document->getAttachment()){
+            throw new ResourceNotFoundException('Attachment not found.');
+        }
+
+        $file = new File(sprintf('%s/%s', $this->uploader->getUploadDir(), $attachment->getFilename()));
+
+        return $this->file($file);
     }
 
     /**
@@ -195,17 +209,17 @@ class DocumentController extends AbstractFOSRestController
      * @Rest\Post("/{document_id}/attachment", requirements={"document_id"="\d+"})
      * @SWG\Tag(name="Attachments")
      *
-     *  @SWG\Parameter(
+     * @SWG\Parameter(
      *     name="file",
      *     in="formData",
      *     type="file",
-     *     description="The field used to order rewards"
+     *     description="The field used to add attachment"
      * )
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Returns document by id.",
-     *     @Model(type=Document::class)
+     *     description="Creates attachment.",
+     *     @Model(type=Attachment::class)
      * )
      *
      * @return Response
@@ -241,8 +255,6 @@ class DocumentController extends AbstractFOSRestController
             );
         }
 
-        $view = $this->view($document->getAttachment(), Response::HTTP_OK);
-
         return $this->handleView($view);
     }
 
@@ -260,7 +272,7 @@ class DocumentController extends AbstractFOSRestController
      *
      * @return Response
      */
-    public function deleteAttachment(Request $request)
+    public function deleteDocument(Request $request)
     {
         $document = $this->documentRepository->find($request->get('document_id'));
         if (! $document) {
@@ -275,14 +287,16 @@ class DocumentController extends AbstractFOSRestController
     /**
      * @param Request $request
      *
-     * @Rest\Get("/{document_id}/attachment/{attachment_id}/thumbnails", requirements={"document_id"="\d+",
-     *                                                                   "attachment_id"="\d+"})
+     * @Rest\Get("/{document_id}/attachment/thumbnails", requirements={"document_id"="\d+"})
      * @SWG\Tag(name="Thumbnails")
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Returns document by id.",
-     *     @Model(type=Document::class)
+     *     description="Returns thumbnails.",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(ref=@Model(type=Thumbnail::class))
+     *     )
      * )
      *
      * @return Response
@@ -305,15 +319,13 @@ class DocumentController extends AbstractFOSRestController
     /**
      * @param Request $request
      *
-     * @Rest\Get("/{document_id}/attachment/{attachment_id}/thumbnails/{thumb_id}", requirements={"document_id"="\d+",
-     *                                                                              "attachment_id"="\d+",
+     * @Rest\Get("/{document_id}/attachment/thumbnails/{thumb_id}", requirements={"document_id"="\d+",
      *                                                                              "thumb_id"="\d+"})
      * @SWG\Tag(name="Thumbnails")
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Returns document by id.",
-     *     @Model(type=Document::class)
+     *     description="Returns thumbnail by id."
      * )
      *
      * @return Response
@@ -325,11 +337,16 @@ class DocumentController extends AbstractFOSRestController
             throw new ResourceNotFoundException('Document not found.');
         }
 
-        if (! $document->getAttachment()) {
-            throw new ResourceNotFoundException('Attachment not found.');
-        }
-        $view = $this->view($document->getAttachment()->getThumbnails(), Response::HTTP_OK);
+        $thumbId = $request->get('thumb_id');
 
-        return $this->handleView($view);
+        $thumbnail = $this->thumbnailRepository->findThumbnailById($document, $thumbId);
+
+        if(! $thumbnail){
+            throw new ResourceNotFoundException('Thumbnail not found.');
+        }
+
+        $file = new File(sprintf('%s/%s', $this->uploader->getUploadDir(), $thumbnail->getFilename()));
+
+        return $this->file($file);
     }
 }

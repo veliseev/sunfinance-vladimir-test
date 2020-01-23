@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class Thumbnail
  *
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\ThumbnailRepository")
  * @JMS\ExclusionPolicy("NONE")
  */
 class Thumbnail
@@ -39,6 +39,7 @@ class Thumbnail
     private $filename;
 
     /**
+     * @JMS\Exclude()
      * @ORM\ManyToOne(targetEntity="Attachment", inversedBy="thumbnails")
      * @ORM\JoinColumn(name="attachment_id", referencedColumnName="id")
      * @var Attachment
