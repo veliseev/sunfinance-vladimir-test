@@ -30,8 +30,3 @@ services:
     env_file:
       - .env
     user: ${LOCAL_USER}:${LOCAL_USER}
-  adminer:
-    image: adminer
-    restart: on-failure
-    ports:
-      - '8080:8080'
