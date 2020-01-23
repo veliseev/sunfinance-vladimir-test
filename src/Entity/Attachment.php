@@ -38,7 +38,7 @@ class Attachment
     private $filename;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Document", inversedBy="attachments")
+     * @ORM\OneToOne(targetEntity="Document", inversedBy="attachment")
      * @ORM\JoinColumn(name="document_id", referencedColumnName="id")
      * @var Document
      */

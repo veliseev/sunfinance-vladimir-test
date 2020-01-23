@@ -38,6 +38,20 @@ class Document
     private $title;
 
     /**
+     * @ORM\OneToOne(targetEntity="Attachment", mappedBy="document")
+     * @var Attachment
+     */
+    private $attachment;
+
+    /**
+     * Document constructor.
+     */
+    public function __construct()
+    {
+        $this->attachments = new ArrayCollection();
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -70,54 +84,18 @@ class Document
     }
 
     /**
-     * @return ArrayCollection
+     * @return Attachment|null
      */
-    public function getAttachments(): ArrayCollection
+    public function getAttachment(): ?Attachment
     {
-        return $this->attachments;
-    }
-
-    /**
-     * @param ArrayCollection $attachments
-     */
-    public function setAttachments(ArrayCollection $attachments): void
-    {
-        $this->attachments = $attachments;
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return Document
-     */
-    public function addAttachment(Attachment $attachment): Document
-    {
-        $attachment->setDocument($this);
-        $this->attachments[] = $attachment;
-
-        return $this;
+        return $this->attachment;
     }
 
     /**
      * @param Attachment $attachment
      */
-    public function removeAttachment(Attachment $attachment): void
+    public function setAttachment(Attachment $attachment): void
     {
-        $this->attachments->removeElement($attachment);
-    }
-
-
-    /**
-     * @ORM\OneToMany(targetEntity="Attachment", mappedBy="document")
-     * @var ArrayCollection
-     */
-    private $attachments;
-
-    /**
-     * Document constructor.
-     */
-    public function __construct()
-    {
-        $this->attachments = new ArrayCollection();
+        $this->attachment = $attachment->setDocument($this);
     }
 }
