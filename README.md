@@ -28,7 +28,7 @@ $ docker-compose exec php php bin/console assets:install
 
 And you're ready to go.
 
-Documentation will be available here http://localhost, you'll be available to test endpoints there as well.
+Documentation will be available here http://localhost, you'll be able to test endpoints there as well.
 
 ## Important Notes
 * I didn't have enough time to figure out how to properly configure nginx within docker contanier, that's why
